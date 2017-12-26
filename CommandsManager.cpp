@@ -5,16 +5,20 @@
 #include "CommandsManager.h"
 #include "StartCommand.h"
 
-
-CommandsManager::CommandsManager(Server server)
-        : server(server) {
+CommandsManager::CommandsManager(Server server) : server(server) {
     commandsMap["start"] = new StartCommand();
-// Add more commands...
+    // Add more commands...
 }
 void CommandsManager::executeCommand(string command, vector<string> args) {
     Command *commandObj = commandsMap[command];
     commandObj->execute(args, server);
 }
+
+void CommandsManager::startServer() {
+    server.start();
+}
+
+
 CommandsManager::~CommandsManager() {
     map<string, Command *>::iterator it;
     for (it = commandsMap.begin(); it != commandsMap.end(); it++) {

@@ -25,11 +25,11 @@ void Server::start() {
     }
     // Assign a local address to the socket
     struct sockaddr_in serverAddress;
-    bzero((void*)&serverAddress, sizeof(serverAddress));
+    bzero((void *) &serverAddress, sizeof(serverAddress));
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_addr.s_addr = INADDR_ANY;
     serverAddress.sin_port = htons(port);
-    if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) == -1) {
+    if (bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) == -1) {
         throw "Error on binding";
     }
 
@@ -41,20 +41,21 @@ void Server::start() {
 
     // looping until two clients create communication
     while (true) {
+
+        cout << "Waiting for clients connections..." << endl;
+        // Accept a new client connection
+        int clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddress, &clientAddressLen);
+        cout << "Client connected" << endl;
+        if (clientSocket == -1)
+            throw "Error on accept client";
+
+    }
+}
+
+void Server::twoClientsCommunication(int blackClientSocket, int whiteClientSocket) {
         int black = 1;
         int white = 2;
         int n;
-        cout << "Waiting for clients connections..." << endl;
-        // Accept a new client connection
-        int blackClientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLen);
-        cout << "Client 1 connected" << endl;
-        if (blackClientSocket == -1)
-            throw "Error on accept 1";
-        int whiteClientSocket = accept(serverSocket, (struct sockaddr *)&clientAddress, &clientAddressLen);
-        cout << "Client 2 connected" << endl;
-        if (whiteClientSocket == -1)
-            throw "Error on accept 2";
-
         n = write(blackClientSocket, &black, sizeof(black));
         if (n == -1) {
             cout << "Error writing to blackClientSocket" << endl;
@@ -73,7 +74,7 @@ void Server::start() {
         // Close communication with the current clients
         close(blackClientSocket);
         close(whiteClientSocket);
-    }
+
 
 }
 

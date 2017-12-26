@@ -17,5 +17,4 @@ class Command {
         virtual ~Command() {}
 };
 
-
 #endif //EX5_SERVER_COMMAND_H

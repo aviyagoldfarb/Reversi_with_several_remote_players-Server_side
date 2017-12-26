@@ -9,15 +9,15 @@
 #include "Command.h"
 #include "Server.h"
 
-
 class CommandsManager {
-public: CommandsManager(Server server);
+public:
+    CommandsManager(Server server);
     ~CommandsManager();
     void executeCommand(string command, vector<string> args);
+    void startServer();
 private:
     map<string, Command *> commandsMap;
     Server server;
 };
-
 
 #endif //EX5_SERVER_COMMANDSMANAGER_H

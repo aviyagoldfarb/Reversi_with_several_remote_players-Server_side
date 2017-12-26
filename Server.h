@@ -12,6 +12,7 @@ public:
     Server(int port);
     void start();
     void stop();
+    void twoClientsCommunication(int blackClientSocket, int whiteClientSocket);
     Point readCell(int client);
 
 private:
