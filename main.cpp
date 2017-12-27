@@ -22,14 +22,6 @@ int main() {
 
     Server server(port);
     CommandsManager commandsManager(server);
+    commandsManager.startServer();
 
-    //commandsManager.start()
-    /*
-    try {
-        server.start();
-    } catch (const char *msg) {
-        cout << "Cannot start server. Reason: " << msg << endl;
-        exit(-1);
-    }
-    */
 }

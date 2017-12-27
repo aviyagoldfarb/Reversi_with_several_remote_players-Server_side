@@ -16,7 +16,12 @@ void CommandsManager::executeCommand(string command, vector<string> args) {
 }
 
 void CommandsManager::startServer() {
-    server.start();
+    try {
+        server.start();
+    } catch (const char *msg) {
+        cout << "Cannot start server. Reason: " << msg << endl;
+        exit(-1);
+    }
     int i = 0;
     while (true) {
         pthread_t thread;
