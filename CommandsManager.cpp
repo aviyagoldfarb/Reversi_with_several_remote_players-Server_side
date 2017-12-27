@@ -10,9 +10,9 @@ CommandsManager::CommandsManager(Server server) : server(server) {
     commandsMap["start"] = new StartCommand();
     // Add more commands...
 }
-void CommandsManager::executeCommand(string command, vector<string> args) {
+void CommandsManager::executeCommand(string command, vector<string> args, int clientSocket) {
     Command *commandObj = commandsMap[command];
-    commandObj->execute(args, server);
+    commandObj->execute(args, server, &games, clientSocket);
 }
 
 void CommandsManager::startServer() {
@@ -54,9 +54,17 @@ void* CommandsManager::acceptClientsFromServer(void*) {
 
 void* CommandsManager:: getCommandFromServer(void* clientSocket) {
     CommandOrder* cop;
-    (void*)cop = server.getCommand((int)clientSocket);
-    CommandOrder co = *cop;
-    this->executeCommand(co.command, co.args);
+    CommandOrder co;
+    bool stay = true;
+    while(stay) {
+        (void *) cop = server.getCommand((int) clientSocket);
+        co = *cop;
+        if (co.command.compare("close")) {
+            this->executeCommand(co.command, co.args, (int) clientSocket);
+        } else {
+            stay = false;
+        }
+    }
 }
 
 

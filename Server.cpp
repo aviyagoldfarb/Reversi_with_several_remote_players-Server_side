@@ -207,3 +207,14 @@ void* Server::getCommand(int clientSocket) {
     CommandOrder* cop;
     return (void*)cop;
 }
+
+void Server :: writeToClient(int clientSocket, string whatToWrite) {
+    int n;
+    // Write the result back to the black client
+    n = write(clientSocket, &whatToWrite, sizeof(whatToWrite));
+    if (n == -1) {
+        cout << "Error writing to clientSocket" << endl;
+        return;
+    }
+    return;
+}

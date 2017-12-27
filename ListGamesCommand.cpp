@@ -6,10 +6,16 @@
 
 ListGamesCommand ::ListGamesCommand() {}
 
-void ListGamesCommand ::printListOfOpenGames(void *listOfOpenGames) {
-    vector<string>* loogP = (vector<string>*)listOfOpenGames;
-    vector<string> loog = *loogP;
-    for (int i = 0; i < loog.size(); i++) {
-        cout << loog[i] << endl;
+void ListGamesCommand :: execute(vector<string> args, Server server,  vector<Game>* gamesp, int clientSocket) {
+    vector<Game> games;
+    int counter = 0;
+    for (int i = 0; i < games.size(); i++) {
+        if ((games[i].blackClientSocket != 0) && (games[i].whiteClientSocket = 0)) {
+            server.writeToClient(clientSocket, games[i].name);
+            counter++;
+        }
+    }
+    if (counter == 0) {
+        server.writeToClient(clientSocket, "no games to join");
     }
 }

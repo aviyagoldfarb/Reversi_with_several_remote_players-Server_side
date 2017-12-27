@@ -17,6 +17,7 @@ public:
     Point readCell(int client);
     int acceptClients();
     void* getCommand(int clientSocket);
+    void writeToClient(int clientsocket, string whatToWrite);
 
 private:
     int port;

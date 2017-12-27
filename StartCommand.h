@@ -12,10 +12,9 @@
 
 class StartCommand : public Command {
 public:
-    virtual void execute(vector<string> args, Server server) {
-
-    }
-
+    StartCommand();
+    ~StartCommand();
+    virtual void execute(vector<string> args, Server server,  vector<Game>* games, int clientSocket);
 };
 
 

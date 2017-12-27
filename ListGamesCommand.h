@@ -17,17 +17,7 @@ class ListGamesCommand : public Command {
 public:
     ListGamesCommand();
     ~ListGamesCommand();
-    virtual void execute(vector<string> args, vector<string> listOfOpenGames) {
-        pthread_t thread;
-        int rc = pthread_create(&thread, NULL, printListOfOpenGames, void* listOfOpenGames);
-        if (rc) {
-            cout << "Error: unable to create thread of print list of games, " << rc << endl;
-            exit(-1);
-        }
-        pthread_exit(NULL);
-    }
-    void printListOfOpenGames(void* server);
-
+    virtual void execute(vector<string> args, Server server,  vector<Game>* games, int clientSocket);
 };
 
 
