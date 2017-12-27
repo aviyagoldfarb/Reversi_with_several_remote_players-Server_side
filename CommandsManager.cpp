@@ -4,6 +4,7 @@
 
 #include "CommandsManager.h"
 #include "StartCommand.h"
+#include <cstdlib>
 
 CommandsManager::CommandsManager(Server server) : server(server) {
     commandsMap["start"] = new StartCommand();
@@ -16,6 +17,41 @@ void CommandsManager::executeCommand(string command, vector<string> args) {
 
 void CommandsManager::startServer() {
     server.start();
+    int i = 0;
+    while (true) {
+        pthread_t thread;
+        threads.push_back(thread);
+        int rc = pthread_create(&threads[i], NULL, acceptClientsFromServer, NULL);
+        if (rc) {
+            cout << "Error: unable to create thread, " << rc << endl;
+            exit(-1);
+        }
+        threads.pop_back();
+        i++;
+        pthread_exit(NULL);
+    }
+}
+
+void* CommandsManager::acceptClientsFromServer(void*) {
+    int clientSocket = server.acceptClients();
+    pthread_t thread;
+    threads.push_back(thread);
+    int sizeOfThreads = threads.size();
+    int rc = pthread_create(&threads[sizeOfThreads], NULL, getCommandFromServer, (void*)clientSocket);
+    if (rc) {
+        cout << "Error: unable to create thread, " << rc << endl;
+        exit(-1);
+    }
+    pthread_exit(NULL);
+    threads.pop_back();
+
+}
+
+void* CommandsManager:: getCommandFromServer(void* clientSocket) {
+    CommandOrder* cop;
+    (void*)cop = server.getCommand((int)clientSocket);
+    CommandOrder co = *cop;
+    this->executeCommand(co.command, co.args);
 }
 
 

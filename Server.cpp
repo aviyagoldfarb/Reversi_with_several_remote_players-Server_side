@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <string.h>
 
-#define MAX_CONNECTED_CLIENTS 2
+#define MAX_CONNECTED_CLIENTS 10
 
 using namespace std;
 
@@ -35,12 +35,16 @@ void Server::start() {
 
     // Start listening to incoming connections
     listen(serverSocket, MAX_CONNECTED_CLIENTS);
+}
+
+int Server::acceptClients() {
+
     // Define the client socket's structures
     struct sockaddr_in clientAddress;
     socklen_t clientAddressLen;
 
     // looping until two clients create communication
-    while (true) {
+    //while (true) {
 
         cout << "Waiting for clients connections..." << endl;
         // Accept a new client connection
@@ -48,8 +52,8 @@ void Server::start() {
         cout << "Client connected" << endl;
         if (clientSocket == -1)
             throw "Error on accept client";
-
-    }
+    return clientSocket;
+   // }
 }
 
 void Server::twoClientsCommunication(int blackClientSocket, int whiteClientSocket) {
@@ -178,4 +182,28 @@ Point Server::readCell(int client) {
     chosenCell.setY(y);
 
     return chosenCell;
+}
+
+void* Server::getCommand(int clientSocket) {
+    char* s[200], command;
+    int n;
+    vector<string> args;
+    CommandOrder co;
+
+    n = read(clientSocket, &s, sizeof(s));
+    if (n == -1) {
+        cout << "Error reading the command" << endl;
+        return (void*)1;
+    }
+    if (n == 0) {
+        cout << "Client disconnected" << endl;
+        return (void*)1;
+    }
+
+    //dividing the scanning to the command and the arguments
+
+    co.command = command;
+    co.args = args;
+    CommandOrder* cop;
+    return (void*)cop;
 }
