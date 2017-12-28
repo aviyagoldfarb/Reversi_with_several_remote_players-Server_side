@@ -44,7 +44,7 @@ int Server::acceptClients() {
     socklen_t clientAddressLen;
 
     // looping until two clients create communication
-    //while (true) {
+  //  while (true) {
 
         cout << "Waiting for clients connections..." << endl;
         // Accept a new client connection

@@ -7,7 +7,7 @@
 ListGamesCommand ::ListGamesCommand() {}
 
 void ListGamesCommand :: execute(vector<string> args, Server server,  vector<Game>* gamesp, int clientSocket) {
-    vector<Game> games;
+    vector<Game> games = *gamesp;;
     int counter = 0;
     for (int i = 0; i < games.size(); i++) {
         if ((games[i].blackClientSocket != 0) && (games[i].whiteClientSocket = 0)) {
