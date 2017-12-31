@@ -20,6 +20,7 @@ void CommandsManager::executeCommand(string command, vector<string> args, int cl
 }
 
 void CommandsManager::startServer() {
+    string exitStr;
     try {
         server.start();
     } catch (const char *msg) {
@@ -27,15 +28,19 @@ void CommandsManager::startServer() {
         exit(-1);
     }
     pthread_t thread;
-    threads.push_back(thread);
-    int rc = pthread_create(&threads[0], NULL, acceptClientsFromServer, NULL);
+    //threads.push_back(thread);
+    int rc = pthread_create(/*&threads[0]*/&thread, NULL, acceptClientsFromServer, NULL);
     if (rc) {
         cout << "Error: unable to create thread, " << rc << endl;
         exit(-1);
     }
-    threads.pop_back();
+    //threads.pop_back();
+    cin >> exitStr;
+    if (!(exitStr.compare("exit"))){
+        server.stop();
 
-    pthread_exit(NULL);
+        pthread_exit(NULL);
+    }
 
 }
 
@@ -45,14 +50,14 @@ void* CommandsManager::acceptClientsFromServer(void*) {
 
         pthread_t thread;
         threads.push_back(thread);
-        int sizeOfThreads = threads.size();
+        int sizeOfThreads = threads.size()-1;
         int rc = pthread_create(&threads[sizeOfThreads], NULL, getCommandFromServer, (void *) clientSocket);
         if (rc) {
             cout << "Error: unable to create thread, " << rc << endl;
             exit(-1);
         }
-        pthread_exit(NULL);
-        threads.pop_back();
+        //pthread_exit(NULL);
+        //threads.pop_back();
     }
 }
 
@@ -61,7 +66,7 @@ void* CommandsManager:: getCommandFromServer(void* clientSocket) {
     CommandOrder co;
     bool stay = true;
     while(stay) {
-        (void *) cop = server.getCommand((int) clientSocket);
+        cop = server.getCommand((int) clientSocket);
         co = *cop;
         if ((!co.command.compare("join")) || (!co.command.compare("start")) || (!co.command.compare("list_games"))) {
             this->executeCommand(co.command, co.args, (int) clientSocket);
@@ -70,6 +75,7 @@ void* CommandsManager:: getCommandFromServer(void* clientSocket) {
             }
         }
     }
+    threads.pop_back();
 }
 
 
