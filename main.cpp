@@ -23,5 +23,4 @@ int main() {
     Server server(port);
     CommandsManager commandsManager(server);
     commandsManager.startServer();
-
 }

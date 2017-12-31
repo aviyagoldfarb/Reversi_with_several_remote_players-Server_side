@@ -8,6 +8,11 @@
 #include "Point.h"
 #include <vector>
 
+struct CommandOrder {
+    string command;
+    vector<string> args;
+};
+
 class Server {
 public:
     Server(int port);
@@ -16,7 +21,7 @@ public:
     void twoClientsCommunication(int blackClientSocket, int whiteClientSocket);
     Point readCell(int client);
     int acceptClients();
-    void* getCommand(int clientSocket);
+    CommandOrder* getCommand(int clientSocket);
     void writeToClient(int clientsocket, string whatToWrite);
 
 private:
@@ -25,10 +30,7 @@ private:
     int serverSocket;
 
     void handleClients(int blackClientSocket, int whiteClientSocket);
-    struct CommandOrder {
-        string command;
-        vector<string> args;
-    };
+
 };
 
 #endif //EX4_SERVER_SERVER_H

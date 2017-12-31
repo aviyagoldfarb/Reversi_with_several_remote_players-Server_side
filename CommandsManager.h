@@ -1,5 +1,5 @@
 //
-// Created by udi on 24/12/17.
+// Udi Goldman 301683264 , Aviya Goldfarb 201509635
 //
 
 #ifndef EX5_SERVER_COMMANDSMANAGER_H
@@ -8,10 +8,6 @@
 #include <map>
 #include "Command.h"
 #include "Server.h"
-struct CommandOrder {
-    string command;
-    vector<string> args;
-};
 
 
 class CommandsManager {
@@ -26,7 +22,6 @@ private:
     map<string, Command *> commandsMap;
     Server server;
     vector<pthread_t> threads;
-
     vector<Game> games;
 };
 

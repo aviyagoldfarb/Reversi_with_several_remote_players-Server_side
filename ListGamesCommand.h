@@ -1,5 +1,5 @@
 //
-// Created by udi on 25/12/17.
+// Udi Goldman 301683264 , Aviya Goldfarb 201509635
 //
 
 #ifndef EX5_SERVER_LISTGAMESCOMMAND_H

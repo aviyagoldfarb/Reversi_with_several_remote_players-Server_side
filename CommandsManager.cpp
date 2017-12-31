@@ -1,5 +1,5 @@
 //
-// Created by udi on 24/12/17.
+// Udi Goldman 301683264 , Aviya Goldfarb 201509635
 //
 
 #include "CommandsManager.h"
@@ -10,8 +10,8 @@
 
 CommandsManager::CommandsManager(Server server) : server(server) {
     commandsMap["start"] = new StartCommand();
-    commandsMap["join"] = new JoinCommand();
     commandsMap["list_games"] = new ListGamesCommand();
+    commandsMap["join"] = new JoinCommand();
 }
 
 void CommandsManager::executeCommand(string command, vector<string> args, int clientSocket) {
@@ -26,19 +26,17 @@ void CommandsManager::startServer() {
         cout << "Cannot start server. Reason: " << msg << endl;
         exit(-1);
     }
-    int i = 0;
-  //while{
-        pthread_t thread;
-        threads.push_back(thread);
-        int rc = pthread_create(&threads[0], NULL, acceptClientsFromServer, NULL);
-        if (rc) {
-            cout << "Error: unable to create thread, " << rc << endl;
-            exit(-1);
-        }
-        threads.pop_back();
-       // i++;
-        pthread_exit(NULL);
-    //{
+    pthread_t thread;
+    threads.push_back(thread);
+    int rc = pthread_create(&threads[0], NULL, acceptClientsFromServer, NULL);
+    if (rc) {
+        cout << "Error: unable to create thread, " << rc << endl;
+        exit(-1);
+    }
+    threads.pop_back();
+
+    pthread_exit(NULL);
+
 }
 
 void* CommandsManager::acceptClientsFromServer(void*) {

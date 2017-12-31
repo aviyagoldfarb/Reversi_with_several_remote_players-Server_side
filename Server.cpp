@@ -185,27 +185,27 @@ Point Server::readCell(int client) {
     return chosenCell;
 }
 
-void* Server::getCommand(int clientSocket) {
-    char* s[200], command;
+CommandOrder* Server::getCommand(int clientSocket) {
+    char s[200], command;
     int n;
     vector<string> args;
-    CommandOrder co;
+    CommandOrder* co;
 
     n = read(clientSocket, &s, sizeof(s));
     if (n == -1) {
         cout << "Error reading the command" << endl;
-        return (void*)-1;
+        return NULL;
     }
     if (n == 0) {
         cout << "Client disconnected" << endl;
-        return (void*)-1;
+        return NULL;
     }
 
     //dividing the scanning to the command and the arguments
 
-    co.command = command;
-    co.args = args;
-    return (void*)&co;
+    co->command = command;
+    co->args = args;
+    return co;
 }
 
 void Server :: writeToClient(int clientSocket, string whatToWrite) {
