@@ -4,12 +4,16 @@
 
 #include "CommandsManager.h"
 #include "StartCommand.h"
+#include "JoinCommand.h"
+#include "ListGamesCommand.h"
 #include <cstdlib>
 
 CommandsManager::CommandsManager(Server server) : server(server) {
     commandsMap["start"] = new StartCommand();
-    // Add more commands...
+    commandsMap["join"] = new JoinCommand();
+    commandsMap["list_games"] = new ListGamesCommand();
 }
+
 void CommandsManager::executeCommand(string command, vector<string> args, int clientSocket) {
     Command *commandObj = commandsMap[command];
     commandObj->execute(args, server, &games, clientSocket);
@@ -61,10 +65,11 @@ void* CommandsManager:: getCommandFromServer(void* clientSocket) {
     while(stay) {
         (void *) cop = server.getCommand((int) clientSocket);
         co = *cop;
-        if (co.command.compare("close")) {
+        if ((!co.command.compare("join")) || (!co.command.compare("start")) || (!co.command.compare("list_games"))) {
             this->executeCommand(co.command, co.args, (int) clientSocket);
-        } else {
-            stay = false;
+            if ((!co.command.compare("join")) ||(!co.command.compare("start"))) {
+                stay = false;
+            }
         }
     }
 }

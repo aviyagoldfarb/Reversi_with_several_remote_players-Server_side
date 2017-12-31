@@ -3,6 +3,7 @@
 //
 
 #include "Server.h"
+#include "CommandsManager.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -193,19 +194,18 @@ void* Server::getCommand(int clientSocket) {
     n = read(clientSocket, &s, sizeof(s));
     if (n == -1) {
         cout << "Error reading the command" << endl;
-        return (void*)1;
+        return (void*)-1;
     }
     if (n == 0) {
         cout << "Client disconnected" << endl;
-        return (void*)1;
+        return (void*)-1;
     }
 
     //dividing the scanning to the command and the arguments
 
     co.command = command;
     co.args = args;
-    CommandOrder* cop;
-    return (void*)cop;
+    return (void*)&co;
 }
 
 void Server :: writeToClient(int clientSocket, string whatToWrite) {
