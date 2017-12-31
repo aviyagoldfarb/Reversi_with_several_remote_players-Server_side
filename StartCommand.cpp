@@ -19,6 +19,6 @@ void StartCommand ::execute(vector<string> args, Server server, vector<Game> *ga
     game.blackClientSocket = clientSocket;
     game.whiteClientSocket = 0;
     games.push_back(game);
-    server.writeToClient(clientSocket, "success");//write to the client that it's done.
+    server.writeToClient(clientSocket, "1");//write to the client that it's done.
     return;
 }

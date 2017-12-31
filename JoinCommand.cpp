@@ -15,6 +15,7 @@ void JoinCommand :: execute(vector<string> args, Server server,  vector<Game>* g
             if (games[i].whiteClientSocket != 0) {
                 games[i].whiteClientSocket = clientSocket;
                 server.twoClientsCommunication(games[i].blackClientSocket, games[i].whiteClientSocket);
+
                 flag = 1;
             }
         }
