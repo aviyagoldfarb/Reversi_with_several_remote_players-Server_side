@@ -3,24 +3,20 @@
 //
 
 #include "ListGamesCommand.h"
+#include <cstring>
 
 ListGamesCommand ::ListGamesCommand() {}
 
-void ListGamesCommand :: execute(vector<string> args, Server server,  vector<Game>* gamesp, int clientSocket) {
-    vector<Game> games = *gamesp;;
+void ListGamesCommand::execute(vector<string> args, Server server,  vector<Game>* gamesPtr, int clientSocket) {
+    char gamesListBuffer[250];
+    memset(gamesListBuffer, '\0', 250);
     int counter = 0;
     pthread_mutex_t count_mutex;
-    for (int i = 0; i < games.size(); i++) {
-        if ((games[i].blackClientSocket != 0) && (games[i].whiteClientSocket = 0)) {
-
-            pthread_mutex_lock(&count_mutex);
-            server.writeToClient(clientSocket, games[i].name);
-            pthread_mutex_unlock(&count_mutex);
-
-            counter++;
+    for (int i = 0; i < gamesPtr->size(); i++) {
+        if (((*gamesPtr)[i].blackClientSocket != 0) && ((*gamesPtr)[i].whiteClientSocket = 0)) {
+            strcat(gamesListBuffer, (*gamesPtr)[i].name.c_str());
         }
+        strcat(gamesListBuffer, " ");
     }
-    if (counter == 0) {
-        server.writeToClient(clientSocket, "no games to join");
-    }
+    server.writeToClient(clientSocket, gamesListBuffer);
 }

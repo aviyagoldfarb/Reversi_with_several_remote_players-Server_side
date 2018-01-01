@@ -11,16 +11,11 @@
 #include <cstdlib>
 #include <map>
 
-
-
 class ListGamesCommand : public Command {
 public:
     ListGamesCommand();
-    ~ListGamesCommand();
     virtual void execute(vector<string> args, Server server,  vector<Game>* games, int clientSocket);
+    ~ListGamesCommand();
 };
-
-
-
 
 #endif //EX5_SERVER_LISTGAMESCOMMAND_H
