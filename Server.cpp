@@ -38,23 +38,64 @@ void Server::start() {
     listen(serverSocket, MAX_CONNECTED_CLIENTS);
 }
 
-int Server::acceptClients() {
-
+int Server::acceptClient() {
     // Define the client socket's structures
     struct sockaddr_in clientAddress;
     socklen_t clientAddressLen;
-
-    // looping until two clients create communication
-  //  while (true) {
-
-        cout << "Waiting for clients connections..." << endl;
-        // Accept a new client connection
-        int clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddress, &clientAddressLen);
-        cout << "Client connected" << endl;
-        if (clientSocket == -1)
-            throw "Error on accept client";
+    cout << "Waiting for clients connections..." << endl;
+    // Accept a new client connection
+    int clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddress, &clientAddressLen);
+    cout << "Client connected" << endl;
+    if (clientSocket == -1)
+        throw "Error on accept client";
     return clientSocket;
-   // }
+}
+
+void Server::writeToClient(int clientSocket, char* buffer) {
+    int n;
+    // Write the buffer's content to the client
+    n = write(clientSocket, buffer, sizeof(buffer));
+    if (n == -1) {
+        cout << "Error writing to clientSocket" << endl;
+        return;
+    }
+    return;
+}
+
+CommandOrder* Server::getCommand(int clientSocket) {
+    char buffer[50];
+    memset(buffer, '\0', 50);
+    int n;
+    CommandOrder* coPtr;
+
+    n = read(clientSocket, buffer, sizeof(buffer));
+    if (n == -1) {
+        cout << "Error reading the command" << endl;
+        return NULL;
+    }
+    if (n == 0) {
+        cout << "Client disconnected" << endl;
+        return NULL;
+    }
+
+    //break the buffer into command and arguments
+    char *temp;
+    int i = 0;
+    temp = strtok (buffer, " ");
+    while (temp != NULL)
+    {
+        if (i == 0){
+            string tempStr(temp);
+            coPtr->command = tempStr;
+        }
+        else{
+            string tempStr(temp);
+            coPtr->args.push_back(temp);
+        }
+        temp = strtok (NULL, " ");
+        i++;
+    }
+    return coPtr;
 }
 
 void Server::twoClientsCommunication(int blackClientSocket, int whiteClientSocket) {
@@ -79,8 +120,6 @@ void Server::twoClientsCommunication(int blackClientSocket, int whiteClientSocke
         // Close communication with the current clients
         close(blackClientSocket);
         close(whiteClientSocket);
-
-
 }
 
 // Handle requests from a specific client
@@ -150,10 +189,6 @@ void Server::handleClients(int blackClientSocket, int whiteClientSocket) {
 
 }
 
-void Server::stop() {
-    close(serverSocket);
-}
-
 Point Server::readCell(int client) {
     Point chosenCell(-1, -1);
     int x, y;
@@ -185,36 +220,6 @@ Point Server::readCell(int client) {
     return chosenCell;
 }
 
-CommandOrder* Server::getCommand(int clientSocket) {
-    char s[200], command;
-    int n;
-    vector<string> args;
-    CommandOrder* co;
-
-    n = read(clientSocket, &s, sizeof(s));
-    if (n == -1) {
-        cout << "Error reading the command" << endl;
-        return NULL;
-    }
-    if (n == 0) {
-        cout << "Client disconnected" << endl;
-        return NULL;
-    }
-
-    //dividing the scanning to the command and the arguments
-
-    co->command = command;
-    co->args = args;
-    return co;
-}
-
-void Server :: writeToClient(int clientSocket, string whatToWrite) {
-    int n;
-    // Write the result back to the black client
-    n = write(clientSocket, &whatToWrite, sizeof(whatToWrite));
-    if (n == -1) {
-        cout << "Error writing to clientSocket" << endl;
-        return;
-    }
-    return;
+void Server::stop() {
+    close(serverSocket);
 }

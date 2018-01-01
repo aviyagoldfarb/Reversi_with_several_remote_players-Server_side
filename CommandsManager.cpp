@@ -28,13 +28,12 @@ void CommandsManager::startServer() {
         exit(-1);
     }
     pthread_t thread;
-    //threads.push_back(thread);
-    int rc = pthread_create(/*&threads[0]*/&thread, NULL, acceptClientsFromServer, NULL);
+    int rc = pthread_create(&thread, NULL, acceptClientsFromServer, NULL);
     if (rc) {
         cout << "Error: unable to create thread, " << rc << endl;
         exit(-1);
     }
-    //threads.pop_back();
+    //wait for 'exit' command
     cin >> exitStr;
     if (!(exitStr.compare("exit"))){
         server.stop();
@@ -44,14 +43,14 @@ void CommandsManager::startServer() {
 
 }
 
-void* CommandsManager::acceptClientsFromServer(void*) {
+void* CommandsManager::acceptClientsFromServer(void* args) {
+    int clientSocket;
     while (true) {
-        int clientSocket = server.acceptClients();
-
+        clientSocket = server.acceptClient();
         pthread_t thread;
         threads.push_back(thread);
-        int sizeOfThreads = threads.size()-1;
-        int rc = pthread_create(&threads[sizeOfThreads], NULL, getCommandFromServer, (void *) clientSocket);
+        int numberOfThreads = threads.size()-1;
+        int rc = pthread_create(&threads[numberOfThreads], NULL, getAndExecuteCommandFromServer, (void *) clientSocket);
         if (rc) {
             cout << "Error: unable to create thread, " << rc << endl;
             exit(-1);
@@ -61,17 +60,15 @@ void* CommandsManager::acceptClientsFromServer(void*) {
     }
 }
 
-void* CommandsManager:: getCommandFromServer(void* clientSocket) {
-    CommandOrder* cop;
-    CommandOrder co;
-    bool stay = true;
-    while(stay) {
-        cop = server.getCommand((int) clientSocket);
-        co = *cop;
-        if ((!co.command.compare("join")) || (!co.command.compare("start")) || (!co.command.compare("list_games"))) {
-            this->executeCommand(co.command, co.args, (int) clientSocket);
-            if ((!co.command.compare("join")) ||(!co.command.compare("start"))) {
-                stay = false;
+void* CommandsManager:: getAndExecuteCommandFromServer(void* clientSocket) {
+    CommandOrder* coPtr;
+    bool gameNotPlayed = true;
+    while(gameNotPlayed) {
+        coPtr = server.getCommand((int) clientSocket);
+        if ((!coPtr->command.compare("join")) || (!coPtr->command.compare("start")) || (!coPtr->command.compare("list_games"))) {
+            this->executeCommand(coPtr->command, coPtr->args, (int) clientSocket);
+            if ((!coPtr->command.compare("join")) || (!coPtr->command.compare("start"))) {
+                gameNotPlayed = false;
             }
         }
     }

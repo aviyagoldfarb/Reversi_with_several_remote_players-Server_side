@@ -17,20 +17,18 @@ class Server {
 public:
     Server(int port);
     void start();
-    void stop();
-    void twoClientsCommunication(int blackClientSocket, int whiteClientSocket);
-    Point readCell(int client);
-    int acceptClients();
+    int acceptClient();
+    void writeToClient(int clientsocket, char* buffer);
     CommandOrder* getCommand(int clientSocket);
-    void writeToClient(int clientsocket, string whatToWrite);
+    void twoClientsCommunication(int blackClientSocket, int whiteClientSocket);
+    void handleClients(int blackClientSocket, int whiteClientSocket);
+    Point readCell(int client);
+    void stop();
 
 private:
     int port;
     // the socket's file descriptor
     int serverSocket;
-
-    void handleClients(int blackClientSocket, int whiteClientSocket);
-
 };
 
 #endif //EX4_SERVER_SERVER_H

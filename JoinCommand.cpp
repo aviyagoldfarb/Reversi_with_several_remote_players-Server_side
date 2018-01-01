@@ -3,29 +3,30 @@
 //
 
 #include "JoinCommand.h"
+#include <cstring>
 
+JoinCommand::JoinCommand() {}
 
-JoinCommand ::JoinCommand() {}
-
-void JoinCommand :: execute(vector<string> args, Server server,  vector<Game>* gamesp, int clientSocket) {
-    vector<Game> games = *gamesp;
+void JoinCommand::execute(vector<string> args, Server server,  vector<Game>* gamesPtr, int clientSocket) {
+    char buffer[3];
+    memset(buffer, '\0', 3);
     pthread_mutex_t count_mutex;
-    int flag = 0;
-    for (int i = 0; i < games.size(); i++) {
-        if ((!args[0].compare(games[i].name)) && (flag == 0)) {
-            if (games[i].whiteClientSocket != 0) {
-                games[i].whiteClientSocket = clientSocket;
-                server.twoClientsCommunication(games[i].blackClientSocket, games[i].whiteClientSocket);
 
-                pthread_mutex_lock(&count_mutex);
-                games.erase(games.begin() + i); //erasing the game when it's finished
-                pthread_mutex_unlock(&count_mutex);
-
-                flag = 1;
-            }
+    for (int i = 0; i < gamesPtr->size(); i++) {
+        if ((!args[0].compare((*gamesPtr)[i].name)) && ((*gamesPtr)[i].whiteClientSocket == 0)) {
+            //joined the game, write 1 to the client
+            strcpy(buffer, "1");
+            server.writeToClient(clientSocket, buffer);
+            (*gamesPtr)[i].whiteClientSocket = clientSocket;
+            pthread_mutex_lock(&count_mutex);
+            //delete the game from the gamesPtr vector
+            gamesPtr->erase(gamesPtr->begin() + i);
+            pthread_mutex_unlock(&count_mutex);
+            server.twoClientsCommunication((*gamesPtr)[i].blackClientSocket, (*gamesPtr)[i].whiteClientSocket);
+            return;
         }
     }
-    if (flag == 0) {
-        server.writeToClient(clientSocket, "There is no game with this name");
-    }
+    //cant join this game, write -1 to the client
+    strcpy(buffer, "-1");
+    server.writeToClient(clientSocket, buffer);
 }

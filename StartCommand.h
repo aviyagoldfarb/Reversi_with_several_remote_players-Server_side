@@ -9,13 +9,11 @@
 #include <iostream>
 #include <map>
 
-
 class StartCommand : public Command {
 public:
     StartCommand();
+    virtual void execute(vector<string> args, Server server, vector<Game>* games, int clientSocket);
     ~StartCommand();
-    virtual void execute(vector<string> args, Server server,  vector<Game>* games, int clientSocket);
 };
-
 
 #endif //EX5_SERVER_STARTCOMMAND_H

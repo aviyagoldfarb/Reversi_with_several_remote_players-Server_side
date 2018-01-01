@@ -13,14 +13,14 @@
 class CommandsManager {
 public:
     CommandsManager(Server server);
-    ~CommandsManager();
     void executeCommand(string command, vector<string> args, int clientSocket);
     void startServer();
-    void* acceptClientsFromServer(void*);
-    void* getCommandFromServer(void*);
+    void* acceptClientsFromServer(void* args);
+    void* getAndExecuteCommandFromServer(void*);
+    ~CommandsManager();
 private:
-    map<string, Command *> commandsMap;
     Server server;
+    map<string, Command *> commandsMap;
     vector<pthread_t> threads;
     vector<Game> games;
 };
