@@ -15,7 +15,9 @@ class ListGamesCommand : public Command {
 public:
     ListGamesCommand();
     virtual void execute(vector<string> args, Server server,  vector<Game>* games, int clientSocket);
-    ~ListGamesCommand();
+    ~ListGamesCommand(){
+        pthread_mutex_destroy(&count_mutex);
+    }
 };
 
 #endif //EX5_SERVER_LISTGAMESCOMMAND_H

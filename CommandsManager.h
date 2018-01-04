@@ -9,19 +9,21 @@
 #include "Command.h"
 #include "Server.h"
 
-
 class CommandsManager {
 public:
-    CommandsManager(Server server);
-    void executeCommand(string command, vector<string> args, int clientSocket);
-    void startServer();
-    void* acceptClientsFromServer(void* args);
-    void* getAndExecuteCommandFromServer(void*);
-    ~CommandsManager();
+    static CommandsManager* getInstance(Server* server);
+    static CommandsManager* deleteInstance();
+    void executeCommand(string command, vector<string> args, int socket = 0);
+    //void stopClients();
 private:
-    Server server;
+    // A singleton
+    CommandsManager(Server* server);
+    CommandsManager(const CommandsManager &);
+    ~CommandsManager();
+    static CommandsManager* instance;
+    static pthread_mutex_t lock;
     map<string, Command *> commandsMap;
-    vector<pthread_t> threads;
+    Server* server;
     vector<Game> games;
 };
 

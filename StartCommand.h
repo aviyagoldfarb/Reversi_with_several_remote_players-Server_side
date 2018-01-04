@@ -13,7 +13,9 @@ class StartCommand : public Command {
 public:
     StartCommand();
     virtual void execute(vector<string> args, Server server, vector<Game>* games, int clientSocket);
-    ~StartCommand();
+    ~StartCommand(){
+        pthread_mutex_destroy(&count_mutex);
+    }
 };
 
 #endif //EX5_SERVER_STARTCOMMAND_H

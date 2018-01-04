@@ -3,7 +3,6 @@
 //
 
 #include "Server.h"
-#include "CommandsManager.h"
 #include <stdlib.h>
 #include <fstream>
 
@@ -21,6 +20,16 @@ int main() {
     else cout << "Unable to open file";
 
     Server server(port);
-    CommandsManager commandsManager(server);
-    commandsManager.startServer();
+
+    try {
+        server.start();
+        cout << "Enter exit to stop server" << endl;
+        string exitStr;
+        cin >> exitStr;
+        if (exitStr == "exit")
+            server.stop();
+    } catch (const char *msg) {
+        cout << "Cannot start server. Reason: " << msg << endl;
+        exit(-1);
+    }
 }

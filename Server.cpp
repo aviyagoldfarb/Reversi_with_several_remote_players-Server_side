@@ -8,14 +8,21 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <string.h>
+#include <cstdlib>
 
 #define MAX_CONNECTED_CLIENTS 10
+#define MAX_COMMAND_LENGTH 50
 
 using namespace std;
 
+static void* acceptClient(void*);
+static void* getCommand(void*);
 
-Server::Server(int port) :port(port), serverSocket(0) {
+pthread_mutex_t lock_mutex;
+
+Server::Server(int port) :port(port), serverSocket(0), serverThreadId(0) {
     cout << "Server" << endl;
+    pthread_mutex_init(&count_mutex, NULL);
 }
 
 void Server::start() {
@@ -36,25 +43,100 @@ void Server::start() {
 
     // Start listening to incoming connections
     listen(serverSocket, MAX_CONNECTED_CLIENTS);
+
+    /*in order to handle each client on a separate thread,
+    and to be able to exit from the server and close all sockets/threads*/
+    int rc = pthread_create(&serverThreadId, NULL, &acceptClient, (void *)this);
+    if (rc) {
+        cout << "Error: unable to create thread, " << rc << endl;
+        exit(-1);
+    }
 }
 
-int Server::acceptClient() {
-    // Define the client socket's structures
-    struct sockaddr_in clientAddress;
-    socklen_t clientAddressLen;
-    cout << "Waiting for clients connections..." << endl;
-    // Accept a new client connection
-    int clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddress, &clientAddressLen);
-    cout << "Client connected" << endl;
-    if (clientSocket == -1)
-        throw "Error on accept client";
-    return clientSocket;
+static void* acceptClient(void* server) {
+    Server* hostServer = (Server*)server;
+    int serverSocket = hostServer->getServerSocket();
+
+
+    while(true){
+
+        // Define the client socket's structures
+        struct sockaddr_in clientAddress;
+        socklen_t clientAddressLen = sizeof(clientAddress);
+
+        cout << "Waiting for clients connections..." << endl;
+        // Accept a new client connection
+        int clientSocket = accept(serverSocket, (struct sockaddr *) &clientAddress, &clientAddressLen);
+        cout << "Client connected" << endl;
+        if (clientSocket == -1)
+            throw "Error on accept client";
+        hostServer->setClientSocket(clientSocket);
+        pthread_t threadId;
+        //hostServer->threads.push_back(thread);
+        //int numberOfThreads = (hostServer->threads).size()-1;
+        int rc = pthread_create(&threadId/*(hostServer->threads[numberOfThreads])*/, NULL, &getCommand, (void *) hostServer);
+        if (rc) {
+            cout << "Error: unable to create thread, " << rc << endl;
+            exit(-1);
+        }
+    }
 }
 
-void Server::writeToClient(int clientSocket, char* buffer) {
+static void* getCommand(void* server) {
+    Server* hostServer = (Server*)server;
+
+    pthread_mutex_lock(&lock_mutex);
+    int clientSocket = hostServer->getClientSocket();
+    pthread_mutex_unlock(&lock_mutex);
+
+    bool gameNotPlayed = true;
+    while(gameNotPlayed) {
+        char buffer[MAX_COMMAND_LENGTH];
+        memset(buffer, '\0', MAX_COMMAND_LENGTH);
+        int n;
+        CommandOrder co;
+        CommandOrder *coPtr = &co;
+
+        n = read(clientSocket, buffer, MAX_COMMAND_LENGTH);
+        if (n == -1) {
+            cout << "Error reading the command" << endl;
+            return NULL;
+        }
+        if (n == 0) {
+            cout << "Client disconnected" << endl;
+            return NULL;
+        }
+
+        //break the buffer into command and arguments
+        char *temp;
+        int i = 0;
+        temp = strtok(buffer, " ");
+        while (temp != NULL) {
+            if (i == 0) {
+                string tempStr(temp);
+                coPtr->command = tempStr;
+            } else {
+                string tempStr(temp);
+                coPtr->args.push_back(temp);
+            }
+            temp = strtok(NULL, " ");
+            i++;
+        }
+
+        if ((!coPtr->command.compare("join")) || (!coPtr->command.compare("start")) || (!coPtr->command.compare("list_games"))) {
+            CommandsManager::getInstance(hostServer)->executeCommand(coPtr->command, coPtr->args, (int) clientSocket);
+            if ((!coPtr->command.compare("join")) || (!coPtr->command.compare("start"))) {
+                gameNotPlayed = false;
+            }
+        }
+    }
+    return NULL;
+}
+
+void Server::writeIntToClient(int clientSocket, int buffer) {
     int n;
     // Write the buffer's content to the client
-    n = write(clientSocket, buffer, sizeof(buffer));
+    n = write(clientSocket, &buffer, sizeof(buffer));
     if (n == -1) {
         cout << "Error writing to clientSocket" << endl;
         return;
@@ -62,40 +144,15 @@ void Server::writeToClient(int clientSocket, char* buffer) {
     return;
 }
 
-CommandOrder* Server::getCommand(int clientSocket) {
-    char buffer[50];
-    memset(buffer, '\0', 50);
+void Server::writeToClient(int clientSocket, char* buffer) {
     int n;
-    CommandOrder* coPtr;
-
-    n = read(clientSocket, buffer, sizeof(buffer));
+    // Write the buffer's content to the client
+    n = write(clientSocket, buffer, strlen(buffer));
     if (n == -1) {
-        cout << "Error reading the command" << endl;
-        return NULL;
+        cout << "Error writing to clientSocket" << endl;
+        return;
     }
-    if (n == 0) {
-        cout << "Client disconnected" << endl;
-        return NULL;
-    }
-
-    //break the buffer into command and arguments
-    char *temp;
-    int i = 0;
-    temp = strtok (buffer, " ");
-    while (temp != NULL)
-    {
-        if (i == 0){
-            string tempStr(temp);
-            coPtr->command = tempStr;
-        }
-        else{
-            string tempStr(temp);
-            coPtr->args.push_back(temp);
-        }
-        temp = strtok (NULL, " ");
-        i++;
-    }
-    return coPtr;
+    return;
 }
 
 void Server::twoClientsCommunication(int blackClientSocket, int whiteClientSocket) {
@@ -220,6 +277,25 @@ Point Server::readCell(int client) {
     return chosenCell;
 }
 
+int Server::getServerSocket(){
+    return serverSocket;
+}
+
+int Server::getClientSocket(){
+    return clientSocket;
+}
+
+void Server::setClientSocket(int newClientSocket){
+    pthread_mutex_lock(&count_mutex);
+    clientSocket = newClientSocket;
+    pthread_mutex_unlock(&count_mutex);
+}
+
 void Server::stop() {
+    //CommandsManager::getInstance(this)->stopClients();
+    CommandsManager::getInstance(this)->deleteInstance();
+    pthread_cancel(serverThreadId);
     close(serverSocket);
+    pthread_mutex_destroy(&count_mutex);
+    cout << "Server stopped" << endl;
 }

@@ -15,7 +15,9 @@ class JoinCommand : public Command {
     public:
     JoinCommand();
     virtual void execute(vector<string> args, Server server, vector<Game>* games, int clientSocket);
-    ~JoinCommand();
+    ~JoinCommand(){
+        pthread_mutex_destroy(&count_mutex);
+    }
 };
 
 #endif //EX5_SERVER_JOINCOMMAND_H

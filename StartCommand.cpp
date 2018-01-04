@@ -5,17 +5,17 @@
 #include "StartCommand.h"
 #include <cstring>
 
-StartCommand :: StartCommand() {}
+StartCommand :: StartCommand() {
+    pthread_mutex_init(&count_mutex, NULL);
+}
 
 void StartCommand ::execute(vector<string> args, Server server, vector<Game> *gamesPtr, int clientSocket) {
-    char buffer[3];
-    memset(buffer, '\0', 3);
-    pthread_mutex_t count_mutex;
+    pthread_mutex_lock(&count_mutex);
     for (int i = 0; i < gamesPtr->size(); i++) {
         if (!args[0].compare((*gamesPtr)[i].name)) {
+            pthread_mutex_unlock(&count_mutex);
             //A game with this name is already exist, write -1 to the client
-            strcpy(buffer, "-1");
-            server.writeToClient(clientSocket, buffer);
+            server.writeIntToClient(clientSocket, -1);
             return;
         }
     }
@@ -24,11 +24,10 @@ void StartCommand ::execute(vector<string> args, Server server, vector<Game> *ga
     game.blackClientSocket = clientSocket;
     game.whiteClientSocket = 0;
 
-    pthread_mutex_lock(&count_mutex);
     gamesPtr->push_back(game);
     pthread_mutex_unlock(&count_mutex);
+
     //A new game was created, write 1 to the client
-    strcpy(buffer, "1");
-    server.writeToClient(clientSocket, buffer);
+    server.writeIntToClient(clientSocket, 1);
     return;
 }
